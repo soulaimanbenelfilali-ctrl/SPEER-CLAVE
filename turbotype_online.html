@@ -12,7 +12,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- إعدادات الربط مع Firebase للعبة Speed Clavier -->
+<script>
+  // 1. معرف اللعبة المخصص للغرف (تقدر تخليه هكا)
+  window.__app_id = "speed-clavier-online";
 
+  // 2. معلومات مشروعك من منصة Firebase
+  const myFirebaseConfig = {
+    apiKey: "298999301248",
+    authDomain: "https://speed-clave-default-rtdb.firebaseio.com/",
+    projectId: "speed-clave
+",
+    storageBucket: "حط_PROJECT_ID_هنا.appspot.com",
+    messagingSenderId: "حط_SENDER_ID_هنا",
+    appId: "حط_APP_ID_هنا"
+  };
+
+  // 3. تحويل الإعدادات وتشغيل الربط أوتوماتيكياً
+  window.__firebase_config = JSON.stringify(myFirebaseConfig);
+</script>
     <style>
         :root {
             --neon-cyan: #06b6d4;
