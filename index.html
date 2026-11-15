@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سباق الكتابة السريعة | TurboType Online</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo for Arabic & JetBrains Mono for English/Code feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- إعدادات الربط مع Firebase للعبة Speed Clavier -->
+<script>
+  // 1. معرف اللعبة المخصص للغرف (تقدر تخليه هكا)
+  window.__app_id = "speed-clavier-online";
+
+  // 2. معلومات مشروعك من منصة Firebase
+  const myFirebaseConfig = {
+    apiKey: "298999301248",
+    authDomain: "https://speed-clave-default-rtdb.firebaseio.com/",
+    projectId: "speed-clave
+",
+    storageBucket: "حط_PROJECT_ID_هنا.appspot.com",
+    messagingSenderId: "حط_SENDER_ID_هنا",
+    appId: "حط_APP_ID_هنا"
+  };
+
+  // 3. تحويل الإعدادات وتشغيل الربط أوتوماتيكياً
+  window.__firebase_config = JSON.stringify(myFirebaseConfig);
+</script>
+    <style>
+        :root {
+            --neon-cyan: #06b6d4;
+            --racing-orange: #f97316;
+            --asphalt-dark: #0f172a;
+            --asphalt-road: #1e293b;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #090d16;
+            color: #f8fafc;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-mono-code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+
+        /* Racing Neon Glow Effects */
+        .glow-cyan {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+        }
+        .glow-orange {
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.35);
+        }
+        .text-glow-cyan {
+            text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+        }
+
+        /* Typing Text Box Styling */
+        .typing-display {
+            line-height: 2.1;
+            letter-spacing: 0.01em;
+            word-spacing: 0.15em;
+        }
+        .typing-display.en-mode {
+            font-family: 'JetBrains Mono', 'Cairo', monospace;
+            line-height: 1.9;
+            letter-spacing: 0.02em;
+        }
+
+        /* Character States */
+        .char-correct {
+            color: #4ade80; /* green-400 */
+        }
+        .char-incorrect {
+            color: #f87171; /* red-400 */
+            background-color: rgba(239, 68, 68, 0.28);
+            border-radius: 4px;
+            text-decoration: underline wavy #ef4444;
+        }
+        .char-current {
+            background-color: rgba(6, 182, 212, 0.35);
+            border-bottom: 3px solid #22d3ee;
+            border-radius: 3px;
+            color: #ffffff;
+            animation: pulseCursor 1s infinite;
+        }
+        .char-pending {
+            color: #94a3b8; /* slate-400 */
+        }
+
+        @keyframes pulseCursor {
+            0%, 100% { background-color: rgba(6, 182, 212, 0.4); }
+            50% { background-color: rgba(6, 182, 212, 0.15); }
+        }
+
+        /* Shake animation on error */
+        @keyframes shakeError {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .shake-box {
+            animation: shakeError 0.2s ease-in-out;
+        }
+
+        /* Canvas container responsiveness */
+        #trackContainer {
+            position: relative;
+            width: 100%;
+            height: 210px;
+        }
+        @media (min-width: 768px) {
+            #trackContainer {
+                height: 260px;
+            }
+        }
+        #raceCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 1rem;
+        }
+
+        /* Glassmorphism cards */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-gradient-to-b from-[#070b14] via-[#0d1424] to-[#090d16]">
+
+    <!-- Toast Notification Banner (No alert() used) -->
+    <div id="toastBanner" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
+        <div class="glass-panel px-5 py-3 rounded-2xl border border-cyan-500/50 shadow-2xl flex items-center gap-3">
+            <i id="toastIcon" class="fa-solid fa-circle-info text-cyan-400 text-lg"></i>
+            <span id="toastMessage" class="text-sm font-bold text-white">رسالة النظام</span>
+        </div>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <header class="w-full max-w-6xl mx-auto px-3 sm:px-6 pt-3 pb-2 flex items-center justify-between">
+        <div class="flex items-center gap-2.5 cursor-pointer" onclick="returnToMenu()">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg glow-cyan">
+                <i class="fa-solid fa-gauge-high text-white text-lg sm:text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg sm:text-2xl font-black tracking-tight bg-gradient-to-l from-cyan-400 via-white to-orange-400 bg-clip-text text-transparent">
+                    سباق الكتابة السريعة
+                </h1>
+                <p class="text-[11px] sm:text-xs text-slate-400 font-semibold -mt-1">TurboType Arena • PC & Mobile</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Connection Status Badge -->
+            <div id="onlineStatusBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs font-semibold text-slate-300">
+                <span id="statusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="statusText">جاري الاتصال...</span>
+            </div>
+
+            <!-- Sound Toggle Button -->
+            <button id="soundToggleBtn" onclick="toggleSound()" class="p-2.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-cyan-400 transition active:scale-95" title="تشغيل/كتم الصوت">
+                <i id="soundIcon" class="fa-solid fa-volume-high text-base"></i>
+            </button>
+
+            <!-- Back to Lobby Button (Visible during game) -->
+            <button id="homeBtn" onclick="returnToMenu()" class="hidden p-2.5 sm:px-3.5 sm:py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-xs sm:text-sm font-bold transition active:scale-95">
+                <i class="fa-solid fa-right-from-bracket ml-1"></i>
+                <span class="hidden sm:inline">خروج</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow w-full max-w-6xl mx-auto px-3 sm:px-6 py-2 flex flex-col justify-center">
+
+        <!-- ==================== 1. MAIN LOBBY / MENU SCREEN ==================== -->
+        <section id="lobbyScreen" class="w-full max-w-4xl mx-auto my-auto space-y-5">
+            <!-- Hero Card -->
+            <div class="glass-panel rounded-3xl p-5 sm:p-8 shadow-2xl border border-slate-700/80 relative overflow-hidden">
+                <!-- Decorative Racing Stripes -->
+                <div class="absolute -top-24 -left-24 w-56 h-56 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -bottom-24 -right-24 w-56 h-56 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="text-center mb-6">
+                    <span class="inline-block px-3.5 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-bold mb-2">
+                        <i class="fa-solid fa-bolt text-amber-400 ml-1"></i> سرعة أصابعك هي وقود سيارتك!
+                    </span>
+                    <h2 class="text-2xl sm:text-4xl font-black text-white mb-2">
+                        اكتب بسرعة، فعّل التيربو، واسحق منافسيك!
+                    </h2>
+                    <p class="text-slate-400 text-xs sm:text-sm max-w-xl mx-auto">
+                        تحدَّ أصدقاءك أونلاين عبر الرقم التسلسلي للغرفة، أو تدرّب ضد الذكاء الاصطناعي على الحاسوب أو الهاتف.
+                    </p>
+                </div>
+
+                <!-- Player Profile & Language Configuration -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-900/70 p-4 rounded-2xl border border-slate-800">
+                    <!-- Nickname Input -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                            <i class="fa-solid fa-helmet-safety text-orange-400 ml-1"></i> اسم المتسابق (اللقب)
+                        </label>
+                        <input type="text" id="playerNameInput" maxlength="16" placeholder="أدخل اسمك هنا..."
+                            class="w-full px-4 py-3 rounded-xl bg-slate-800/90 border border-slate-700 focus:border-cyan-400 focus:outline-none text-white font-bold text-sm transition">
+                    </div>
+
+                    <!-- Race Language Selection -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                            <i class="fa-solid fa-language text-cyan-400 ml-1"></i> لغة نصوص السباق
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" id="langArBtn" onclick="selectLanguage('ar')"
+                                class="py-3 px-3 rounded-xl font-bold text-sm border transition flex items-center justify-center gap-2 bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md">
+                                <span>🇲🇦</span> العربية
+                            </button>
+                            <button type="button" id="langEnBtn" onclick="selectLanguage('en')"
+                                class="py-3 px-3 rounded-xl font-bold text-sm border transition flex items-center justify-center gap-2 bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white">
+                                <span>🇬🇧</span> English
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3 Game Modes Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Mode 1: Create Online Room -->
+                    <div class="bg-gradient-to-b from-slate-800/90 to-slate-900/95 p-5 rounded-2xl border border-cyan-500/30 hover:border-cyan-400 transition flex flex-col justify-between group">
+                        <div>
+                            <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-plus-circle"></i>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-white mb-1">إنشاء غرفة أونلاين</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                                أنشئ سباقاً خاصاً واحصل على رقم تسلسلي (6 أرقام) لمشاركته مع صديقك.
+                            </p>
+                        </div>
+                        <button onclick="createOnlineRoom()" id="createRoomBtn"
+                            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-lg glow-cyan transition active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-flag-checkered"></i> إنشاء غرفة جديدة
+                        </button>
+                    </div>
+
+                    <!-- Mode 2: Join Online Room -->
+                    <div class="bg-gradient-to-b from-slate-800/90 to-slate-900/95 p-5 rounded-2xl border border-orange-500/30 hover:border-orange-400 transition flex flex-col justify-between group">
+                        <div>
+                            <div class="w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-key"></i>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-white mb-1">انضمام برقم تسلسلي</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                                أدخل الرقم التسلسلي المكون من 6 أرقام الذي أرسله لك صديقك.
+                            </p>
+                            <input type="text" id="joinCodeInput" maxlength="6" inputmode="numeric" placeholder="مثال: 482910"
+                                class="w-full mb-3 px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-orange-400 focus:outline-none text-center font-mono-code text-lg font-bold tracking-widest text-orange-300 placeholder:text-slate-600 placeholder:text-xs placeholder:tracking-normal">
+                        </div>
+                        <button onclick="joinOnlineRoom()" id="joinRoomBtn"
+                            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-white font-extrabold text-sm shadow-lg glow-orange transition active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-right-to-bracket"></i> دخول السباق
+                        </button>
+                    </div>
+
+                    <!-- Mode 3: Solo vs AI -->
+                    <div class="bg-gradient-to-b from-slate-800/90 to-slate-900/95 p-5 rounded-2xl border border-purple-500/30 hover:border-purple-400 transition flex flex-col justify-between group">
+                        <div>
+                            <div class="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl mb-3 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <h3 class="text-lg font-extrabold text-white mb-1">تدريب ضد الذكاء الاصطناعي</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                                طوّر سرعتك في الكتابة ضد سيارتين آليتين بمستويات سرعة مختلفة.
+                            </p>
+                            <select id="aiDifficultySelect"
+                                class="w-full mb-3 px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 focus:border-purple-400 focus:outline-none text-xs font-bold text-slate-200">
+                                <option value="easy">مستوى مبتدئ (25 كلمة/دقيقة)</option>
+                                <option value="medium" selected>مستوى متوسط (45 كلمة/دقيقة)</option>
+                                <option value="hard">مستوى محترف (70 كلمة/دقيقة)</option>
+                            </select>
+                        </div>
+                        <button onclick="startSoloGame()"
+                            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play"></i> ابدأ التدريب الآن
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 2. WAITING ROOM (ONLINE LOBBY) ==================== -->
+        <section id="waitingRoomScreen" class="hidden w-full max-w-2xl mx-auto my-auto">
+            <div class="glass-panel rounded-3xl p-6 sm:p-8 text-center border border-cyan-500/40 shadow-2xl">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyan-500/20 text-cyan-400 text-3xl mb-4 animate-bounce">
+                    <i class="fa-solid fa-satellite-dish"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white mb-1">غرفة السباق جاهزة!</h2>
+                <p class="text-slate-400 text-sm mb-6">شارك هذا الرقم التسلسلي مع صديقك لينضم إليك فوراً</p>
+
+                <!-- Serial Code Box -->
+                <div class="bg-slate-950/90 border-2 border-dashed border-cyan-500/60 rounded-2xl p-5 mb-6 max-w-sm mx-auto">
+                    <span class="block text-xs text-slate-400 font-bold mb-1">الرقم التسلسلي للغرفة</span>
+                    <div id="displayRoomCode" class="font-mono-code text-4xl sm:text-5xl font-black tracking-[0.2em] text-cyan-400 text-glow-cyan my-2">
+                        ------
+                    </div>
+                    <button onclick="copyRoomCode()" class="mt-2 px-4 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-bold transition active:scale-95 inline-flex items-center gap-2">
+                        <i class="fa-regular fa-copy"></i> نسخ الرقم التسلسلي
+                    </button>
+                </div>
+
+                <!-- Players List in Room -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-right">
+                    <div class="p-3.5 rounded-xl bg-slate-800/90 border border-cyan-500/40 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+                            <div>
+                                <div id="waitHostName" class="font-bold text-sm text-white">المضيف</div>
+                                <div class="text-[11px] text-cyan-400">السيارة الزرقاء (جاهز)</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-car-side text-cyan-400 text-xl"></i>
+                    </div>
+
+                    <div id="waitGuestCard" class="p-3.5 rounded-xl bg-slate-900/70 border border-slate-700 flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span id="waitGuestDot" class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>
+                            <div>
+                                <div id="waitGuestName" class="font-bold text-sm text-slate-400">بانتظار المنافس...</div>
+                                <div id="waitGuestSub" class="text-[11px] text-slate-500">أرسل له الرقم التسلسلي</div>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-car-side text-slate-600 text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-3">
+                    <button id="hostStartRaceBtn" onclick="hostTriggerStart()" disabled
+                        class="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 disabled:from-slate-700 disabled:to-slate-800 disabled:text-slate-500 text-white font-extrabold text-sm shadow-lg transition active:scale-95 flex items-center gap-2">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <span id="hostStartBtnText">بانتظار انضمام اللاعب الثاني...</span>
+                    </button>
+                    <button onclick="returnToMenu()" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-bold transition">
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 3. ACTIVE RACE ARENA SCREEN ==================== -->
+        <section id="raceScreen" class="hidden w-full flex flex-col gap-3 my-auto">
+
+            <!-- Top Live Telemetry Bar -->
+            <div class="grid grid-cols-4 gap-2 sm:gap-3">
+                <div class="glass-panel rounded-2xl p-2.5 sm:p-3 text-center border border-cyan-500/30">
+                    <div class="text-[10px] sm:text-xs text-slate-400 font-bold">السرعة (WPM)</div>
+                    <div id="liveWpm" class="font-mono-code text-lg sm:text-2xl font-black text-cyan-400">0</div>
+                </div>
+                <div class="glass-panel rounded-2xl p-2.5 sm:p-3 text-center border border-emerald-500/30">
+                    <div class="text-[10px] sm:text-xs text-slate-400 font-bold">الدقة</div>
+                    <div id="liveAccuracy" class="font-mono-code text-lg sm:text-2xl font-black text-emerald-400">100%</div>
+                </div>
+                <div class="glass-panel rounded-2xl p-2.5 sm:p-3 text-center border border-orange-500/30">
+                    <div class="text-[10px] sm:text-xs text-slate-400 font-bold">التقدم</div>
+                    <div id="liveProgress" class="font-mono-code text-lg sm:text-2xl font-black text-orange-400">0%</div>
+                </div>
+                <div class="glass-panel rounded-2xl p-2.5 sm:p-3 text-center border border-purple-500/30">
+                    <div class="text-[10px] sm:text-xs text-slate-400 font-bold">الوقت</div>
+                    <div id="liveTimer" class="font-mono-code text-lg sm:text-2xl font-black text-purple-300">00:00</div>
+                </div>
+            </div>
+
+            <!-- Race Track Canvas Area -->
+            <div class="glass-panel rounded-2xl p-2 sm:p-3 border border-slate-700/80 shadow-xl relative">
+                <div id="trackContainer">
+                    <canvas id="raceCanvas"></canvas>
+
+                    <!-- Countdown Overlay (3, 2, 1, انطلق!) -->
+                    <div id="countdownOverlay" class="hidden absolute inset-0 bg-slate-950/75 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center z-20">
+                        <div class="text-xs sm:text-sm font-bold text-cyan-300 mb-1">استعد للكتابة بأقصى سرعة!</div>
+                        <div id="countdownNumber" class="text-6xl sm:text-8xl font-black text-white text-glow-cyan animate-bounce">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Arena (Optimized for PC & Mobile Virtual Keyboard) -->
+            <div id="typingCard" class="glass-panel rounded-2xl p-4 sm:p-6 border border-cyan-500/40 shadow-2xl relative transition-all">
+                <!-- Header prompt & Mobile Focus Helper -->
+                <div class="flex items-center justify-between mb-2.5">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-300 text-xs font-bold">
+                            <i class="fa-solid fa-keyboard"></i> اكتب النص التالي:
+                        </span>
+                        <span id="nitroBadge" class="hidden px-2.5 py-1 rounded-lg bg-orange-500/20 border border-orange-500/50 text-orange-300 text-xs font-black animate-pulse">
+                            <i class="fa-solid fa-fire"></i> تيربو نشط!
+                        </span>
+                    </div>
+                    <button type="button" onclick="focusTypingInput()" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-bold border border-slate-700">
+                        <i class="fa-solid fa-mobile-screen-button ml-1 text-cyan-400"></i> إظهار لوحة المفاتيح
+                    </button>
+                </div>
+
+                <!-- Target Text Display -->
+                <div id="targetTextDisplay" onclick="focusTypingInput()"
+                    class="typing-display text-lg sm:text-2xl font-bold bg-slate-950/90 p-4 sm:p-5 rounded-xl border border-slate-800 min-h-[110px] sm:min-h-[125px] cursor-text select-none break-words">
+                </div>
+
+                <!-- Interactive Input Field (Works seamlessly with Mobile Keyboards & PC Physical Keyboards) -->
+                <div class="mt-3 relative">
+                    <input type="text" id="hiddenTypingInput"
+                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                        placeholder="اضغط هنا وابدأ الكتابة فوراً..."
+                        class="w-full px-4 py-3 sm:py-3.5 rounded-xl bg-slate-900 border-2 border-cyan-500/50 focus:border-cyan-400 focus:outline-none text-white font-bold text-base sm:text-lg shadow-inner placeholder:text-slate-500">
+                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none hidden sm:block">
+                        <i class="fa-solid fa-bolt text-amber-400"></i> كل حرف صحيح يدفع سيارتك للأمام
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 4. POST-RACE PODIUM MODAL ==================== -->
+        <div id="podiumModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="glass-panel w-full max-w-lg rounded-3xl p-6 sm:p-8 border border-cyan-500/50 shadow-2xl text-center transform transition-all">
+                <div id="podiumTrophyIcon" class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-4xl text-white shadow-xl mb-4">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 id="podiumTitle" class="text-2xl sm:text-3xl font-black text-white mb-1">انتهى السباق!</h2>
+                <p id="podiumSubtitle" class="text-sm text-cyan-300 font-bold mb-5">أداء مذهل على المضمار!</p>
+
+                <!-- Standings List -->
+                <div id="standingsList" class="space-y-2.5 mb-6 text-right">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button id="playAgainBtn" onclick="handlePlayAgain()"
+                        class="py-3.5 px-5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-extrabold text-sm shadow-lg glow-cyan transition active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> سباق جديد
+                    </button>
+                    <button onclick="returnToMenu()"
+                        class="py-3.5 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-extrabold text-sm border border-slate-700 transition active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-house"></i> القائمة الرئيسية
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-2 text-[11px] text-slate-500">
+        سباق الكتابة السريعة • مصمم لتسريع مهاراتك في الكتابة على الحاسوب والهاتف
+    </footer>
+
+    <!-- ==================== FIREBASE & GAME ENGINE SCRIPT ==================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 1. FIREBASE INITIALIZATION & AUTHENTICATION
+        // ==========================================
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'turbotype-race-app';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let isFirebaseReady = false;
+
+        async function initFirebase() {
+            try {
+                if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                    const firebaseConfig = JSON.parse(__firebase_config);
+                    const app = initializeApp(firebaseConfig);
+                    auth = getAuth(app);
+                    db = getFirestore(app);
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+
+                    onAuthStateChanged(auth, (user) => {
+                        currentUser = user;
+                        if (user) {
+                            isFirebaseReady = true;
+                            updateConnectionUI(true, "متصل أونلاين");
+                        }
+                    });
+                } else {
+                    updateConnectionUI(false, "وضع التدريب المحلي");
+                }
+            } catch (error) {
+                console.error("Firebase init error:", error);
+                updateConnectionUI(false, "وضع التدريب المحلي");
+            }
+        }
+
+        function updateConnectionUI(online, label) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            if (!dot || !text) return;
+            text.textContent = label;
+            if (online) {
+                dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+            } else {
+                dot.className = "w-2 h-2 rounded-full bg-amber-400";
+            }
+        }
+
+        initFirebase();
+
+        // ==========================================
+        // 2. CURATED ARABIC & ENGLISH SENTENCE BANKS
+        // ==========================================
+        const TEXT_BANK = {
+            ar: [
+                "السرعة في الكتابة مهارة رائعة تفتح لك آفاقا واسعة في عالم التقنية والبرمجة الحديثة.",
+                "تنطلق السيارات الرياضية بأقصى سرعتها على المضمار تحت أضواء المدينة الساطعة في ليلة السباق الكبير.",
+                "التركيز والدقة هما مفتاح الفوز الحقيقي فكل حرف تكتبه بشكل صحيح يدفع سيارتك نحو خط النهاية.",
+                "التدريب المستمر يجعل أصابعك تتحرك فوق لوحة المفاتيح بانسيابية مذهلة دون الحاجة للنظر إليها.",
+                "في عالم سباقات السرعة لا مجال للتردد انطلق بكل قوتك وحقق رقما قياسيا جديدا يتحدث عنه الجميع.",
+                "الإبداع والعمل الجاد يصنعان المستحيل ويجعلان من كل تحد فرصة جديدة للتفوق والنجاح المستمر."
+            ],
+            en: [
+                "Speed and precision on the keyboard turn every keystroke into pure nitro power on the race track.",
+                "Modern sports cars roar down the neon highway as drivers push their reflexes to the absolute limit.",
+                "Consistent daily practice builds muscle memory so your fingers glide effortlessly across every single key.",
+                "Victory belongs to the focused mind that stays calm under pressure and never stops accelerating forward.",
+                "Technology connects players from around the world in real time to compete in thrilling digital arenas."
+            ]
+        };
+
+        // ==========================================
+        // 3. WEB AUDIO API SOUND SYNTHESIZER
+        // ==========================================
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playKeyClick(wpm = 30) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                // Pitch rises slightly with WPM for exhilarating feedback
+                const baseFreq = 320 + Math.min(wpm * 3, 350);
+                osc.frequency.setValueAtTime(baseFreq, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.045);
+
+                gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.045);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+
+            playError() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(95, this.ctx.currentTime + 0.12);
+
+                gain.gain.setValueAtTime(0.11, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.13);
+            }
+
+            playCountdown(isGo = false) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(isGo ? 880 : 440, this.ctx.currentTime);
+
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + (isGo ? 0.35 : 0.18));
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + (isGo ? 0.36 : 0.19));
+            }
+
+            playVictory() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    const startTime = this.ctx.currentTime + idx * 0.11;
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    gain.gain.setValueAtTime(0.14, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.31);
+                });
+            }
+        }
+
+        const soundFX = new SoundEngine();
+
+        window.toggleSound = function () {
+            soundFX.muted = !soundFX.muted;
+            const icon = document.getElementById('soundIcon');
+            icon.className = soundFX.muted
+                ? 'fa-solid fa-volume-xmark text-rose-400 text-base'
+                : 'fa-solid fa-volume-high text-cyan-400 text-base';
+            showToast(soundFX.muted ? 'تم كتم الصوت' : 'تم تفعيل المؤثرات الصوتية', 'info');
+        };
+
+        // ==========================================
+        // 4. APPLICATION STATE
+        // ==========================================
+        let gameState = {
+            mode: 'solo', // 'solo' | 'online_host' | 'online_guest'
+            lang: 'ar',
+            playerName: 'متسابق سريع',
+            roomCode: null,
+            unsubscribeRoom: null,
+            targetText: '',
+            typedText: '',
+            totalKeystrokes: 0,
+            correctKeystrokes: 0,
+            streak: 0,
+            wpm: 0,
+            accuracy: 100,
+            progress: 0, // 0 to 100
+            startTime: null,
+            elapsedSeconds: 0,
+            isRacing: false,
+            isFinished: false,
+            racers: [], // Array of racer objects for Canvas & Podium
+            aiInterval: null,
+            timerInterval: null,
+            syncInterval: null,
+            animFrameId: null,
+            roadOffset: 0
+        };
+
+        // ==========================================
+        // 5. UI HELPERS & NAVIGATION
+        // ==========================================
+        window.showToast = function (msg, type = 'info') {
+            const banner = document.getElementById('toastBanner');
+            const text = document.getElementById('toastMessage');
+            const icon = document.getElementById('toastIcon');
+
+            text.textContent = msg;
+            if (type === 'error') {
+                icon.className = 'fa-solid fa-triangle-exclamation text-rose-400 text-lg';
+            } else if (type === 'success') {
+                icon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+            } else {
+                icon.className = 'fa-solid fa-circle-info text-cyan-400 text-lg';
+            }
+
+            banner.classList.remove('opacity-0', '-translate-y-4', 'pointer-events-none');
+            banner.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(window._toastTimer);
+            window._toastTimer = setTimeout(() => {
+                banner.classList.add('opacity-0', '-translate-y-4', 'pointer-events-none');
+                banner.classList.remove('opacity-100', 'translate-y-0');
+            }, 3000);
+        };
+
+        window.selectLanguage = function (lang) {
+            gameState.lang = lang;
+            const arBtn = document.getElementById('langArBtn');
+            const enBtn = document.getElementById('langEnBtn');
+
+            if (lang === 'ar') {
+                arBtn.className = "py-3 px-3 rounded-xl font-bold text-sm border transition flex items-center justify-center gap-2 bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md";
+                enBtn.className = "py-3 px-3 rounded-xl font-bold text-sm border transition flex items-center justify-center gap-2 bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white";
+            } else {
+                enBtn.className = "py-3 px-3 rounded-xl font-bold text-sm border transition flex items-center justify-center gap-2 bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-md";
+                arBtn.className = "py-3 px-3 rounded-xl font-bold text-sm border transition flex items-center justify-center gap-2 bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white";
+            }
+        };
+
+        function getPlayerName() {
+            const raw = document.getElementById('playerNameInput').value.trim();
+            return raw || (gameState.lang === 'ar' ? 'متسابق سريع' : 'SpeedRacer');
+        }
+
+        function switchScreen(screenId) {
+            ['lobbyScreen', 'waitingRoomScreen', 'raceScreen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            document.getElementById('podiumModal').classList.add('hidden');
+
+            const homeBtn = document.getElementById('homeBtn');
+            if (screenId === 'lobbyScreen') {
+                homeBtn.classList.add('hidden');
+            } else {
+                homeBtn.classList.remove('hidden');
+            }
+        }
+
+        window.returnToMenu = function () {
+            cleanupRaceLoops();
+            if (gameState.unsubscribeRoom) {
+                gameState.unsubscribeRoom();
+                gameState.unsubscribeRoom = null;
+            }
+            gameState.roomCode = null;
+            switchScreen('lobbyScreen');
+        };
+
+        function cleanupRaceLoops() {
+            gameState.isRacing = false;
+            clearInterval(gameState.aiInterval);
+            clearInterval(gameState.timerInterval);
+            clearInterval(gameState.syncInterval);
+            cancelAnimationFrame(gameState.animFrameId);
+        }
+
+        function pickRandomText(lang) {
+            const list = TEXT_BANK[lang] || TEXT_BANK.ar;
+            return list[Math.floor(Math.random() * list.length)];
+        }
+
+        // ==========================================
+        // 6. MULTIPLAYER ONLINE ROOM SYSTEM (FIRESTORE)
+        // ==========================================
+        function generateSixDigitCode() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        window.createOnlineRoom = async function () {
+            if (!isFirebaseReady || !currentUser) {
+                showToast('الاتصال بالخادم غير متاح حالياً، جرب وضع التدريب الفردي!', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('createRoomBtn');
+            btn.disabled = true;
+            gameState.playerName = getPlayerName();
+            gameState.mode = 'online_host';
+
+            const code = generateSixDigitCode();
+            const chosenText = pickRandomText(gameState.lang);
+
+            try {
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_rooms', code);
+                const roomData = {
+                    roomCode: code,
+                    lang: gameState.lang,
+                    text: chosenText,
+                    status: 'waiting', // 'waiting' | 'countdown' | 'racing' | 'finished'
+                    createdAt: Date.now(),
+                    host: {
+                        uid: currentUser.uid,
+                        name: gameState.playerName,
+                        progress: 0,
+                        wpm: 0,
+                        accuracy: 100,
+                        finished: false,
+                        finishTime: null
+                    },
+                    guest: null
+                };
+
+                await setDoc(roomRef, roomData);
+                gameState.roomCode = code;
+                enterWaitingRoom(roomData);
+            } catch (err) {
+                console.error("Create room error:", err);
+                showToast('حدث خطأ أثناء إنشاء الغرفة. حاول مرة أخرى.', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        window.joinOnlineRoom = async function () {
+            if (!isFirebaseReady || !currentUser) {
+                showToast('الاتصال بالخادم غير متاح حالياً.', 'error');
+                return;
+            }
+
+            const code = document.getElementById('joinCodeInput').value.trim();
+            if (!/^\d{6}$/.test(code)) {
+                showToast('يرجى إدخال رقم تسلسلي صحيح مكون من 6 أرقام.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('joinRoomBtn');
+            btn.disabled = true;
+            gameState.playerName = getPlayerName();
+            gameState.mode = 'online_guest';
+
+            try {
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_rooms', code);
+                const snap = await getDoc(roomRef);
+
+                if (!snap.exists()) {
+                    showToast('لم يتم العثور على غرفة بهذا الرقم التسلسلي!', 'error');
+                    btn.disabled = false;
+                    return;
+                }
+
+                const data = snap.data();
+                if (data.status !== 'waiting' && data.guest && data.guest.uid !== currentUser.uid) {
+                    showToast('عذراً، هذه الغرفة ممتلئة أو بدأ السباق بالفعل!', 'error');
+                    btn.disabled = false;
+                    return;
+                }
+
+                const guestPayload = {
+                    uid: currentUser.uid,
+                    name: gameState.playerName,
+                    progress: 0,
+                    wpm: 0,
+                    accuracy: 100,
+                    finished: false,
+                    finishTime: null
+                };
+
+                await updateDoc(roomRef, { guest: guestPayload });
+                gameState.roomCode = code;
+                gameState.lang = data.lang;
+                enterWaitingRoom({ ...data, guest: guestPayload });
+            } catch (err) {
+                console.error("Join room error:", err);
+                showToast('تعذر الانضمام للغرفة. تحقق من الرقم وحاول مجدداً.', 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        function enterWaitingRoom(initialData) {
+            switchScreen('waitingRoomScreen');
+            document.getElementById('displayRoomCode').textContent = initialData.roomCode;
+            updateWaitingRoomUI(initialData);
+
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_rooms', initialData.roomCode);
+            if (gameState.unsubscribeRoom) gameState.unsubscribeRoom();
+
+            gameState.unsubscribeRoom = onSnapshot(roomRef, (snapshot) => {
+                if (!snapshot.exists()) return;
+                const data = snapshot.data();
+
+                if (data.status === 'waiting') {
+                    updateWaitingRoomUI(data);
+                } else if (data.status === 'countdown' && !gameState.isRacing && document.getElementById('raceScreen').classList.contains('hidden')) {
+                    // Transition both players to Race Screen simultaneously
+                    setupOnlineRace(data);
+                } else if (data.status === 'racing' || data.status === 'finished') {
+                    syncRemoteRacer(data);
+                }
+            }, (err) => {
+                console.error("Room snapshot error:", err);
+            });
+        }
+
+        function updateWaitingRoomUI(data) {
+            document.getElementById('waitHostName').textContent = data.host.name;
+            const guestNameEl = document.getElementById('waitGuestName');
+            const guestSubEl = document.getElementById('waitGuestSub');
+            const guestDot = document.getElementById('waitGuestDot');
+            const startBtn = document.getElementById('hostStartRaceBtn');
+            const startBtnText = document.getElementById('hostStartBtnText');
+
+            if (data.guest) {
+                guestNameEl.textContent = data.guest.name;
+                guestNameEl.className = "font-bold text-sm text-white";
+                guestSubEl.textContent = "السيارة البرتقالية (متصل وجاهز)";
+                guestSubEl.className = "text-[11px] text-orange-400";
+                guestDot.className = "w-3 h-3 rounded-full bg-emerald-400";
+
+                if (gameState.mode === 'online_host') {
+                    startBtn.disabled = false;
+                    startBtnText.textContent = "ابدأ السباق الآن!";
+                } else {
+                    startBtn.disabled = true;
+                    startBtnText.textContent = "بانتظار صاحب الغرفة لبدء السباق...";
+                }
+            } else {
+                guestNameEl.textContent = "بانتظار المنافس...";
+                guestNameEl.className = "font-bold text-sm text-slate-400";
+                guestSubEl.textContent = "أرسل له الرقم التسلسلي";
+                guestDot.className = "w-3 h-3 rounded-full bg-amber-400 animate-ping";
+                startBtn.disabled = true;
+                startBtnText.textContent = "بانتظار انضمام اللاعب الثاني...";
+            }
+        }
+
+        window.copyRoomCode = function () {
+            const code = gameState.roomCode;
+            if (!code) return;
+            const tempInput = document.createElement('input');
+            tempInput.value = code;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(`تم نسخ الرقم التسلسلي: ${code}`, 'success');
+        };
+
+        window.hostTriggerStart = async function () {
+            if (gameState.mode !== 'online_host' || !gameState.roomCode) return;
+            const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_rooms', gameState.roomCode);
+            await updateDoc(roomRef, {
+                status: 'countdown',
+                text: pickRandomText(gameState.lang)
+            });
+        };
+
+        function setupOnlineRace(data) {
+            gameState.targetText = data.text;
+            gameState.lang = data.lang;
+
+            const isHost = gameState.mode === 'online_host';
+            gameState.racers = [
+                {
+                    id: 'me',
+                    name: gameState.playerName + ' (أنت)',
+                    color: isHost ? '#06b6d4' : '#f97316',
+                    accent: isHost ? '#67e8f9' : '#fdba74',
+                    progress: 0,
+                    displayProgress: 0,
+                    wpm: 0,
+                    accuracy: 100,
+                    finished: false,
+                    finishTime: null,
+                    isPlayer: true
+                },
+                {
+                    id: 'opponent',
+                    name: isHost ? (data.guest?.name || 'المنافس') : data.host.name,
+                    color: isHost ? '#f97316' : '#06b6d4',
+                    accent: isHost ? '#fdba74' : '#67e8f9',
+                    progress: 0,
+                    displayProgress: 0,
+                    wpm: 0,
+                    accuracy: 100,
+                    finished: false,
+                    finishTime: null,
+                    isPlayer: false
+                }
+            ];
+
+            prepareRaceArena();
+        }
+
+        function syncRemoteRacer(data) {
+            const isHost = gameState.mode === 'online_host';
+            const remoteData = isHost ? data.guest : data.host;
+            if (!remoteData) return;
+
+            const opp = gameState.racers.find(r => r.id === 'opponent');
+            if (opp) {
+                opp.progress = remoteData.progress || 0;
+                opp.wpm = remoteData.wpm || 0;
+                opp.accuracy = remoteData.accuracy || 100;
+                if (remoteData.finished && !opp.finished) {
+                    opp.finished = true;
+                    opp.finishTime = remoteData.finishTime || gameState.elapsedSeconds;
+                    checkRaceCompletion();
+                }
+            }
+        }
+
+        // ==========================================
+        // 7. SOLO MODE (VS AI CARS)
+        // ==========================================
+        window.startSoloGame = function () {
+            gameState.mode = 'solo';
+            gameState.playerName = getPlayerName();
+            gameState.targetText = pickRandomText(gameState.lang);
+
+            const diff = document.getElementById('aiDifficultySelect').value;
+            const aiConfigs = {
+                easy: [
+                    { name: 'روبوت مبتدئ 1', wpm: 22, color: '#f97316', accent: '#fdba74' },
+                    { name: 'روبوت مبتدئ 2', wpm: 28, color: '#a855f7', accent: '#d8b4fe' }
+                ],
+                medium: [
+                    { name: 'تيربو بوت', wpm: 42, color: '#f97316', accent: '#fdba74' },
+                    { name: 'نيترو AI', wpm: 50, color: '#a855f7', accent: '#d8b4fe' }
+                ],
+                hard: [
+                    { name: 'البرق الخاطف AI', wpm: 65, color: '#f97316', accent: '#fdba74' },
+                    { name: 'أسطورة المضمار AI', wpm: 78, color: '#a855f7', accent: '#d8b4fe' }
+                ]
+            }[diff];
+
+            gameState.racers = [
+                {
+                    id: 'me',
+                    name: gameState.playerName + ' (أنت)',
+                    color: '#06b6d4',
+                    accent: '#67e8f9',
+                    progress: 0,
+                    displayProgress: 0,
+                    wpm: 0,
+                    accuracy: 100,
+                    finished: false,
+                    finishTime: null,
+                    isPlayer: true
+                },
+                ...aiConfigs.map((ai, idx) => ({
+                    id: `ai_${idx}`,
+                    name: ai.name,
+                    targetWpm: ai.wpm,
+                    color: ai.color,
+                    accent: ai.accent,
+                    progress: 0,
+                    displayProgress: 0,
+                    wpm: 0,
+                    accuracy: 98,
+                    finished: false,
+                    finishTime: null,
+                    isPlayer: false
+                }))
+            ];
+
+            prepareRaceArena();
+        };
+
+        // ==========================================
+        // 8. RACE ARENA PREPARATION & TYPING ENGINE
+        // ==========================================
+        function prepareRaceArena() {
+            cleanupRaceLoops();
+            switchScreen('raceScreen');
+
+            // Reset stats
+            gameState.typedText = '';
+            gameState.totalKeystrokes = 0;
+            gameState.correctKeystrokes = 0;
+            gameState.streak = 0;
+            gameState.wpm = 0;
+            gameState.accuracy = 100;
+            gameState.progress = 0;
+            gameState.elapsedSeconds = 0;
+            gameState.isFinished = false;
+
+            updateTelemetryUI();
+            renderTargetText();
+
+            const inputEl = document.getElementById('hiddenTypingInput');
+            inputEl.value = '';
+            inputEl.disabled = true;
+            inputEl.dir = gameState.lang === 'ar' ? 'rtl' : 'ltr';
+
+            const displayEl = document.getElementById('targetTextDisplay');
+            displayEl.dir = gameState.lang === 'ar' ? 'rtl' : 'ltr';
+            if (gameState.lang === 'en') {
+                displayEl.classList.add('en-mode');
+            } else {
+                displayEl.classList.remove('en-mode');
+            }
+
+            resizeCanvas();
+            startCanvasLoop();
+            runCountdown();
+        }
+
+        function runCountdown() {
+            const overlay = document.getElementById('countdownOverlay');
+            const numEl = document.getElementById('countdownNumber');
+            overlay.classList.remove('hidden');
+
+            let count = 3;
+            numEl.textContent = count;
+            soundFX.playCountdown(false);
+
+            const cdTimer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    numEl.textContent = count;
+                    soundFX.playCountdown(false);
+                } else if (count === 0) {
+                    numEl.textContent = 'انطلق!';
+                    numEl.classList.add('text-emerald-400');
+                    soundFX.playCountdown(true);
+                } else {
+                    clearInterval(cdTimer);
+                    overlay.classList.add('hidden');
+                    numEl.classList.remove('text-emerald-400');
+                    beginActiveRace();
+                }
+            }, 850);
+        }
+
+        function beginActiveRace() {
+            gameState.isRacing = true;
+            gameState.startTime = Date.now();
+
+            const inputEl = document.getElementById('hiddenTypingInput');
+            inputEl.disabled = false;
+            inputEl.focus();
+
+            // Timer & WPM calculation loop
+            gameState.timerInterval = setInterval(() => {
+                if (!gameState.isRacing) return;
+                gameState.elapsedSeconds = (Date.now() - gameState.startTime) / 1000;
+                calculateWPM();
+                updateTelemetryUI();
+            }, 250);
+
+            // AI Movement Loop (if Solo)
+            if (gameState.mode === 'solo') {
+                const totalChars = gameState.targetText.length;
+                gameState.aiInterval = setInterval(() => {
+                    if (!gameState.isRacing) return;
+                    gameState.racers.forEach(r => {
+                        if (!r.isPlayer && !r.finished) {
+                            // 1 word = 5 chars. Add slight natural speed fluctuation
+                            const jitter = 0.85 + Math.random() * 0.3;
+                            const charsPerSec = ((r.targetWpm * 5) / 60) * jitter;
+                            const progressDelta = (charsPerSec / totalChars) * 20; // called every 200ms
+                            r.progress = Math.min(100, r.progress + progressDelta);
+                            r.wpm = Math.round(r.targetWpm * jitter);
+
+                            if (r.progress >= 100) {
+                                r.progress = 100;
+                                r.finished = true;
+                                r.finishTime = gameState.elapsedSeconds;
+                                checkRaceCompletion();
+                            }
+                        }
+                    });
+                }, 200);
+            }
+
+            // Online Firestore Sync Loop (every 400ms to stay smooth and lightweight)
+            if (gameState.mode.startsWith('online') && gameState.roomCode) {
+                gameState.syncInterval = setInterval(() => {
+                    pushOnlineProgress(false);
+                }, 400);
+            }
+        }
+
+        async function pushOnlineProgress(isFinal = false) {
+            if (!gameState.roomCode || !isFirebaseReady) return;
+            try {
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_rooms', gameState.roomCode);
+                const fieldKey = gameState.mode === 'online_host' ? 'host' : 'guest';
+                const payload = {
+                    [`${fieldKey}.progress`]: gameState.progress,
+                    [`${fieldKey}.wpm`]: gameState.wpm,
+                    [`${fieldKey}.accuracy`]: gameState.accuracy,
+                    [`${fieldKey}.finished`]: gameState.isFinished,
+                    [`${fieldKey}.finishTime`]: gameState.isFinished ? gameState.elapsedSeconds : null
+                };
+                if (isFinal) {
+                    payload.status = 'finished';
+                }
+                await updateDoc(roomRef, payload);
+            } catch (e) {
+                // Silent retry on next tick
+            }
+        }
+
+        window.focusTypingInput = function () {
+            const inputEl = document.getElementById('hiddenTypingInput');
+            if (!inputEl.disabled) {
+                inputEl.focus();
+            }
+        };
+
+        // Normalize Arabic Alef/Ta Marbuta variations lightly if needed, or keep exact match for high precision
+        // Keeping exact match with helpful error feedback
+        const typingInput = document.getElementById('hiddenTypingInput');
+        typingInput.addEventListener('input', (e) => {
+            if (!gameState.isRacing || gameState.isFinished) return;
+
+            const val = e.target.value;
+            const target = gameState.targetText;
+            const prevLen = gameState.typedText.length;
+
+            // Detect if character was added
+            if (val.length > prevLen) {
+                gameState.totalKeystrokes++;
+                const lastIdx = val.length - 1;
+                if (val[lastIdx] === target[lastIdx]) {
+                    gameState.correctKeystrokes++;
+                    gameState.streak++;
+                    soundFX.playKeyClick(gameState.wpm);
+                } else {
+                    gameState.streak = 0;
+                    soundFX.playError();
+                    const card = document.getElementById('typingCard');
+                    card.classList.remove('shake-box');
+                    void card.offsetWidth; // trigger reflow
+                    card.classList.add('shake-box');
+                }
+            }
+
+            gameState.typedText = val;
+
+            // Calculate consecutive correct prefix length for car movement
+            let correctPrefix = 0;
+            for (let i = 0; i < val.length; i++) {
+                if (val[i] === target[i]) {
+                    correctPrefix++;
+                } else {
+                    break; // Car only advances up to the first uncorrected typo!
+                }
+            }
+
+            gameState.progress = Math.min(100, Math.round((correctPrefix / target.length) * 1000) / 10);
+            gameState.accuracy = gameState.totalKeystrokes > 0
+                ? Math.max(0, Math.round((gameState.correctKeystrokes / gameState.totalKeystrokes) * 100))
+                : 100;
+
+            calculateWPM();
+
+            // Update local player racer object
+            const me = gameState.racers.find(r => r.isPlayer);
+            if (me) {
+                me.progress = gameState.progress;
+                me.wpm = gameState.wpm;
+                me.accuracy = gameState.accuracy;
+            }
+
+            // Nitro badge toggle
+            const nitroBadge = document.getElementById('nitroBadge');
+            if (gameState.wpm >= 45 && gameState.streak >= 8) {
+                nitroBadge.classList.remove('hidden');
+            } else {
+                nitroBadge.classList.add('hidden');
+            }
+
+            renderTargetText();
+            updateTelemetryUI();
+
+            // Check if player completed the entire text accurately
+            if (correctPrefix === target.length) {
+                finishPlayerRace();
+            }
+        });
+
+        function calculateWPM() {
+            const mins = Math.max(gameState.elapsedSeconds / 60, 0.03);
+            // Standard WPM: (correct characters / 5) / minutes
+            let correctChars = 0;
+            for (let i = 0; i < gameState.typedText.length; i++) {
+                if (gameState.typedText[i] === gameState.targetText[i]) correctChars++;
+                else break;
+            }
+            gameState.wpm = Math.round((correctChars / 5) / mins);
+        }
+
+        function renderTargetText() {
+            const container = document.getElementById('targetTextDisplay');
+            const target = gameState.targetText;
+            const typed = gameState.typedText;
+
+            let html = '';
+            let hasErrorAhead = false;
+
+            for (let i = 0; i < target.length; i++) {
+                const char = target[i] === ' ' ? '&nbsp;' : escapeHtml(target[i]);
+                if (i < typed.length) {
+                    if (!hasErrorAhead && typed[i] === target[i]) {
+                        html += `<span class="char-correct">${char}</span>`;
+                    } else {
+                        hasErrorAhead = true;
+                        html += `<span class="char-incorrect">${char}</span>`;
+                    }
+                } else if (i === typed.length) {
+                    html += `<span class="char-current">${char}</span>`;
+                } else {
+                    html += `<span class="char-pending">${char}</span>`;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function updateTelemetryUI() {
+            document.getElementById('liveWpm').textContent = gameState.wpm;
+            document.getElementById('liveAccuracy').textContent = `${gameState.accuracy}%`;
+            document.getElementById('liveProgress').textContent = `${Math.floor(gameState.progress)}%`;
+
+            const secs = Math.floor(gameState.elapsedSeconds);
+            const mins = Math.floor(secs / 60);
+            const remSecs = secs % 60;
+            document.getElementById('liveTimer').textContent =
+                `${String(mins).padStart(2, '0')}:${String(remSecs).padStart(2, '0')}`;
+        }
+
+        async function finishPlayerRace() {
+            if (gameState.isFinished) return;
+            gameState.isFinished = true;
+            gameState.progress = 100;
+
+            const inputEl = document.getElementById('hiddenTypingInput');
+            inputEl.disabled = true;
+
+            const me = gameState.racers.find(r => r.isPlayer);
+            if (me) {
+                me.progress = 100;
+                me.finished = true;
+                me.finishTime = gameState.elapsedSeconds;
+            }
+
+            soundFX.playVictory();
+            updateTelemetryUI();
+
+            if (gameState.mode.startsWith('online')) {
+                await pushOnlineProgress(true);
+            }
+
+            checkRaceCompletion();
+        }
+
+        function checkRaceCompletion() {
+            const me = gameState.racers.find(r => r.isPlayer);
+            if (me && me.finished) {
+                // Show podium once player crosses the finish line
+                setTimeout(() => {
+                    showPodiumModal();
+                }, 650);
+            }
+        }
+
+        function showPodiumModal() {
+            cleanupRaceLoops();
+            const modal = document.getElementById('podiumModal');
+            const list = document.getElementById('standingsList');
+            const title = document.getElementById('podiumTitle');
+            const subtitle = document.getElementById('podiumSubtitle');
+
+            // Sort racers: finished ones by finishTime ascending, then unfinished by progress descending
+            const sorted = [...gameState.racers].sort((a, b) => {
+                if (a.finished && b.finished) return a.finishTime - b.finishTime;
+                if (a.finished) return -1;
+                if (b.finished) return 1;
+                return b.progress - a.progress;
+            });
+
+            const playerRank = sorted.findIndex(r => r.isPlayer) + 1;
+            if (playerRank === 1) {
+                title.textContent = "المركز الأول! بطل السباق 🏆";
+                subtitle.textContent = `أنهيت السباق بسرعة ${gameState.wpm} كلمة/دقيقة وبدقة ${gameState.accuracy}%`;
+            } else {
+                title.textContent = `المركز ${playerRank}! سباق رائع`;
+                subtitle.textContent = `سرعتك: ${gameState.wpm} كلمة/دقيقة • حاول مجدداً لانتزاع الصدارة!`;
+            }
+
+            list.innerHTML = sorted.map((r, idx) => {
+                const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+                const timeStr = r.finished ? `${r.finishTime.toFixed(1)} ثانية` : `${Math.floor(r.progress)}%`;
+                return `
+                    <div class="p-3.5 rounded-2xl bg-slate-900/90 border ${r.isPlayer ? 'border-cyan-400' : 'border-slate-800'} flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${medal}</span>
+                            <div>
+                                <div class="font-extrabold text-sm text-white">${escapeHtml(r.name)}</div>
+                                <div class="text-xs text-slate-400">السرعة: <span class="text-cyan-400 font-bold">${r.wpm} WPM</span> • الدقة: ${r.accuracy}%</div>
+                            </div>
+                        </div>
+                        <div class="font-mono-code text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-800 text-amber-300">
+                            ${timeStr}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Adjust Play Again button for Guest in online mode
+            const playAgainBtn = document.getElementById('playAgainBtn');
+            if (gameState.mode === 'online_guest') {
+                playAgainBtn.innerHTML = '<i class="fa-solid fa-clock"></i> بانتظار المضيف لسباق جديد';
+            } else {
+                playAgainBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> سباق جديد';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        window.handlePlayAgain = async function () {
+            if (gameState.mode === 'solo') {
+                startSoloGame();
+            } else if (gameState.mode === 'online_host' && gameState.roomCode) {
+                const roomRef = doc(db, 'artifacts', appId, 'public', 'data', 'race_rooms', gameState.roomCode);
+                await updateDoc(roomRef, {
+                    status: 'countdown',
+                    text: pickRandomText(gameState.lang),
+                    'host.progress': 0,
+                    'host.wpm': 0,
+                    'host.finished': false,
+                    'host.finishTime': null,
+                    'guest.progress': 0,
+                    'guest.wpm': 0,
+                    'guest.finished': false,
+                    'guest.finishTime': null
+                });
+            } else {
+                showToast('اطلب من صاحب الغرفة الضغط على "سباق جديد"!', 'info');
+            }
+        };
+
+        // ==========================================
+        // 9. HTML5 CANVAS ANIMATED RACE TRACK ENGINE
+        // ==========================================
+        const canvas = document.getElementById('raceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const container = document.getElementById('trackContainer');
+            if (!container || !canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+        }
+
+        window.addEventListener('resize', () => {
+            if (!document.getElementById('raceScreen').classList.contains('hidden')) {
+                resizeCanvas();
+            }
+        });
+
+        function startCanvasLoop() {
+            function render() {
+                drawRaceTrack();
+                gameState.animFrameId = requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        function drawRaceTrack() {
+            const container = document.getElementById('trackContainer');
+            if (!container) return;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // 1. Night Sky / Horizon Gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, height * 0.25);
+            skyGrad.addColorStop(0, '#090d16');
+            skyGrad.addColorStop(1, '#1e1b4b');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, width, height * 0.25);
+
+            // Cityscape / Stadium Lights Silhouette
+            ctx.fillStyle = '#0f172a';
+            for (let x = 0; x < width; x += 45) {
+                const bh = 12 + ((x * 7) % 22);
+                ctx.fillRect(x, height * 0.25 - bh, 32, bh);
+            }
+
+            // 2. Asphalt Road
+            const roadTop = height * 0.25;
+            const roadHeight = height * 0.75;
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, roadTop, width, roadHeight);
+
+            // Top & Bottom Neon Guardrails
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(0, roadTop, width, 4);
+            ctx.fillStyle = '#f97316';
+            ctx.fillRect(0, height - 4, width, 4);
+
+            // Scroll road markings based on player's live WPM speed
+            const speedFactor = gameState.isRacing ? (2 + gameState.wpm * 0.14) : 0.5;
+            gameState.roadOffset = (gameState.roadOffset + speedFactor) % 60;
+
+            const racers = gameState.racers;
+            const laneCount = Math.max(racers.length, 2);
+            const laneHeight = (roadHeight - 8) / laneCount;
+
+            // 3. Lane Dividers
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([28, 32]);
+            ctx.lineDashOffset = -gameState.roadOffset;
+
+            for (let i = 1; i < laneCount; i++) {
+                const y = roadTop + 4 + i * laneHeight;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // 4. Finish Line (Checkered Flag Pattern on the right side for LTR track visual)
+            const startPadding = 24;
+            const finishX = width - 48;
+            const trackSpan = Math.max(finishX - startPadding - 55, 60);
+
+            const squareSize = 8;
+            for (let y = roadTop + 4; y < height - 4; y += squareSize) {
+                for (let col = 0; col < 2; col++) {
+                    const isWhite = ((Math.floor(y / squareSize) + col) % 2 === 0);
+                    ctx.fillStyle = isWhite ? '#f8fafc' : '#0f172a';
+                    ctx.fillRect(finishX + col * squareSize, y, squareSize, squareSize);
+                }
+            }
+
+            // 5. Draw Each Racer Car
+            racers.forEach((racer, idx) => {
+                // Smoothly interpolate visual progress
+                racer.displayProgress += (racer.progress - racer.displayProgress) * 0.15;
+
+                const laneCenterY = roadTop + 4 + laneHeight * (idx + 0.5);
+                const carX = startPadding + (racer.displayProgress / 100) * trackSpan;
+
+                // Progress Glow Trail behind car
+                const trailGrad = ctx.createLinearGradient(startPadding, laneCenterY, carX, laneCenterY);
+                trailGrad.addColorStop(0, 'rgba(6, 182, 212, 0)');
+                trailGrad.addColorStop(1, racer.color + '44');
+                ctx.fillStyle = trailGrad;
+                ctx.fillRect(startPadding, laneCenterY - 10, Math.max(0, carX - startPadding), 20);
+
+                // Nitro Flame Effect when typing fast
+                if (gameState.isRacing && racer.wpm >= 35 && racer.progress < 100) {
+                    const flameLen = 14 + Math.random() * 16 + Math.min(racer.wpm * 0.2, 20);
+                    ctx.beginPath();
+                    ctx.moveTo(carX, laneCenterY - 5);
+                    ctx.lineTo(carX - flameLen, laneCenterY);
+                    ctx.lineTo(carX, laneCenterY + 5);
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.moveTo(carX, laneCenterY - 2.5);
+                    ctx.lineTo(carX - flameLen * 0.6, laneCenterY);
+                    ctx.lineTo(carX, laneCenterY + 2.5);
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fill();
+                }
+
+                // Draw Sleek Sports Car Vector
+                drawSportsCar(ctx, carX, laneCenterY, racer.color, racer.accent);
+
+                // Racer Name & Live WPM Pill above car
+                ctx.font = 'bold 11px Cairo, sans-serif';
+                const label = `${racer.name} (${racer.wpm} WPM)`;
+                const textWidth = ctx.measureText(label).width;
+                const pillX = Math.min(Math.max(carX - 10, 8), width - textWidth - 16);
+                const pillY = laneCenterY - 27;
+
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                roundRect(ctx, pillX, pillY, textWidth + 12, 17, 6, true);
+
+                ctx.fillStyle = racer.accent;
+                ctx.fillText(label, pillX + 6, pillY + 12);
+            });
+        }
+
+        function drawSportsCar(ctx, x, y, mainColor, accentColor) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.45)';
+            roundRect(ctx, -2, 6, 56, 8, 4, true);
+
+            // Wheels
+            ctx.fillStyle = '#090d16';
+            roundRect(ctx, 6, -11, 12, 22, 3, true);
+            roundRect(ctx, 34, -11, 12, 22, 3, true);
+
+            // Car Chassis
+            ctx.fillStyle = mainColor;
+            ctx.beginPath();
+            ctx.moveTo(0, -8);
+            ctx.lineTo(44, -8);
+            ctx.quadraticCurveTo(56, -6, 56, 0);
+            ctx.quadraticCurveTo(56, 6, 44, 8);
+            ctx.lineTo(0, 8);
+            ctx.quadraticCurveTo(-4, 0, 0, -8);
+            ctx.closePath();
+            ctx.fill();
+
+            // Windshield & Cabin
+            ctx.fillStyle = '#0f172a';
+            roundRect(ctx, 18, -6, 18, 12, 4, true);
+
+            // Racing Stripe
+            ctx.fillStyle = accentColor;
+            ctx.fillRect(4, -2, 46, 4);
+
+            // Headlights
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(52, -6, 3, 3);
+            ctx.fillRect(52, 3, 3, 3);
+
+            ctx.restore();
+        }
+
+        function roundRect(ctx, x, y, width, height, radius, fill) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) ctx.fill();
+        }
+    </script>
+</body>
+</html>
