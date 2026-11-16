@@ -19,13 +19,36 @@
 
   // 2. معلومات مشروعك من منصة Firebase
   const myFirebaseConfig = {
-    apiKey: "298999301248",
-    authDomain: "https://speed-clave-default-rtdb.firebaseio.com/",
+    apiKey: "AIzaSyCtpcfZLn5iRh74n8logAsqfuNZ62zvBO4",
+    authDomain: "speed-clave.firebaseapp.com",
     projectId: "speed-clave
-",
-    storageBucket: "حط_PROJECT_ID_هنا.appspot.com",
-    messagingSenderId: "حط_SENDER_ID_هنا",
-    appId: "حط_APP_ID_هنا"
+     storageBucket: "speed-clave.firebasestorage.app",
+    messagingSenderId: "298999301248",
+    appId: "1:298999301248:web:cbb12c411ce7ad67ff1265",
+    measurementId: "G-BJV29B3F1V"    
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCtpcfZLn5iRh74n8logAsqfuNZ62zvBO4",
+    authDomain: "speed-clave.firebaseapp.com",
+    databaseURL: "https://speed-clave-default-rtdb.firebaseio.com",
+    projectId: "speed-clave",
+    storageBucket: "speed-clave.firebasestorage.app",
+    messagingSenderId: "298999301248",
+    appId: "1:298999301248:web:cbb12c411ce7ad67ff1265",
+    measurementId: "G-BJV29B3F1V"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>هنا"
   };
 
   // 3. تحويل الإعدادات وتشغيل الربط أوتوماتيكياً
