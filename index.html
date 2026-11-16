@@ -12,47 +12,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<!-- إعدادات الربط مع Firebase للعبة Speed Clavier -->
-<script>
-  // 1. معرف اللعبة المخصص للغرف (تقدر تخليه هكا)
-  window.__app_id = "speed-clavier-online";
+    
+    <!-- إعدادات الربط مع Firebase للعبة Speed Clavier -->
+    <script>
+        // 1. معرف اللعبة المخصص للغرف
+        window.__app_id = "speed-clavier-online";
 
-  // 2. معلومات مشروعك من منصة Firebase
-  const myFirebaseConfig = {
-    apiKey: "AIzaSyCtpcfZLn5iRh74n8logAsqfuNZ62zvBO4",
-    authDomain: "speed-clave.firebaseapp.com",
-    projectId: "speed-clave
-     storageBucket: "speed-clave.firebasestorage.app",
-    messagingSenderId: "298999301248",
-    appId: "1:298999301248:web:cbb12c411ce7ad67ff1265",
-    measurementId: "G-BJV29B3F1V"    
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+        // 2. معلومات مشروعك من منصة Firebase
+        const myFirebaseConfig = {
+            apiKey: "AIzaSyCtpcfZLn5iRh74n8logAsqfuNZ62zvBO4",
+            authDomain: "speed-clave.firebaseapp.com",
+            databaseURL: "https://speed-clave-default-rtdb.firebaseio.com",
+            projectId: "speed-clave",
+            storageBucket: "speed-clave.firebasestorage.app",
+            messagingSenderId: "298999301248",
+            appId: "1:298999301248:web:cbb12c411ce7ad67ff1265",
+            measurementId: "G-BJV29B3F1V"
+        };
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCtpcfZLn5iRh74n8logAsqfuNZ62zvBO4",
-    authDomain: "speed-clave.firebaseapp.com",
-    databaseURL: "https://speed-clave-default-rtdb.firebaseio.com",
-    projectId: "speed-clave",
-    storageBucket: "speed-clave.firebasestorage.app",
-    messagingSenderId: "298999301248",
-    appId: "1:298999301248:web:cbb12c411ce7ad67ff1265",
-    measurementId: "G-BJV29B3F1V"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>هنا"
-  };
-
-  // 3. تحويل الإعدادات وتشغيل الربط أوتوماتيكياً
-  window.__firebase_config = JSON.stringify(myFirebaseConfig);
+        // 3. تحويل الإعدادات وتشغيل الربط أوتوماتيكياً
+        window.__firebase_config = JSON.stringify(myFirebaseConfig);
+    </script>
 </script>
     <style>
         :root {
